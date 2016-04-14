@@ -1,8 +1,17 @@
 from django.forms.utils import flatatt
 from django.forms.widgets import Widget
 from django.utils.html import format_html
+from django.utils.safestring import mark_safe
 
 from datetime import datetime
+
+
+JAVASCRIPT_CODE = """<script>
+function openDatetimePicker(input_id)
+{
+    var input = document.getElementById(input_id);
+}
+</script>"""
 
 
 class DatetimeWidget(Widget):
@@ -17,13 +26,16 @@ class DatetimeWidget(Widget):
         if isinstance(value, datetime):
             value = value.strftime(self.datetime_format)
 
+        input_id = self.attrs.get('id') or attrs.get('id')
+
         final_attrs = self.build_attrs(
             attrs,
-            type="text",
+            type='text',
             name=name,
             value=value,
+            onclick='openDatetimePicker("' + input_id + '");'
         )
-        return format_html('<input{} readonly />', flatatt(final_attrs))
+        return mark_safe(JAVASCRIPT_CODE) + format_html('<input{} readonly />', flatatt(final_attrs))
 
     def value_from_datadict(self, data, files, name):
         value = data.get(name, None)
