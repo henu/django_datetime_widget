@@ -10,7 +10,7 @@ from datetime import datetime
 JAVASCRIPT_CODE = """<script>
 var MONTH_NAMES = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
-function openDatetimePicker(input_id)
+function openDatetimePicker(input_id, close_if_open)
 {
     var input = document.getElementById(input_id);
 
@@ -19,6 +19,9 @@ function openDatetimePicker(input_id)
     var picker = document.getElementById(picker_id);
     if (picker) {
         picker.parentElement.removeChild(picker);
+        if (close_if_open) {
+            return;
+        }
     }
 
     var picker_div = document.createElement('div');
@@ -46,7 +49,6 @@ function openDatetimePicker(input_id)
     picker_html += '<span id="' + picker_id + '_year">' + year_now + '</span>';
     picker_html += '<a style="float: right; text-decoration: none;" href="" onclick="return selectDate(\\\'' + input_id + '\\\', ' + (year_now + 1) + ', ' + month_now + ', ' + day_now + ');">&nbsp;&nbsp;&raquo;&nbsp;&nbsp;</a>';
     picker_html += '</div>';
-// onclick="return selectDate(\\\'' + input_id + '\\\', ' + year_now + ', ' + month_now + ', ' + day_now + ');"
 
     // Month input
     picker_html += '<div style="width: 250px; text-align: center;">';
@@ -102,7 +104,7 @@ console.log('selectDate(' + input_id + ', ' + year + ', ' + month + ', ' + day +
     var date = new Date(year, month, day, hour, minute, second, 0);
     input.dataset['date'] = date.toISOString();
 
-    openDatetimePicker(input_id);
+    openDatetimePicker(input_id, false);
 
     return false;
 }
@@ -130,7 +132,7 @@ class DatetimeWidget(Widget):
             type='text',
             name=name,
             value=value,
-            onclick='openDatetimePicker("' + input_id + '");',
+            onclick='openDatetimePicker("' + input_id + '", true);',
         )
         return mark_safe(JAVASCRIPT_CODE) + format_html('<input{} readonly data-date="' + date_isoformat + '" />', flatatt(final_attrs))
 
