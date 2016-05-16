@@ -29,7 +29,7 @@ function openDatetimePicker(input_id, close_if_open)
     picker_div.setAttribute('id', picker_id);
 
     // Read date information from the input
-    var date_now = new Date(input.dataset['date']);
+    var date_now = fromIsoNoTzConversion(input.dataset['date']);
     var year_now = date_now.getFullYear();
     var month_now = date_now.getMonth();
     var day_now = date_now.getDate();
@@ -87,11 +87,10 @@ function openDatetimePicker(input_id, close_if_open)
 
 function selectDate(input_id, year, month, day)
 {
-console.log('selectDate(' + input_id + ', ' + year + ', ' + month + ', ' + day + ')');
     var input = document.getElementById(input_id);
 
     // Get time
-    var date_now = new Date(input.dataset['date']);
+    var date_now = fromIsoNoTzConversion(input.dataset['date']);
     var hour = date_now.getHours();
     var minute = date_now.getMinutes();
     var second = date_now.getSeconds();
@@ -102,11 +101,70 @@ console.log('selectDate(' + input_id + ', ' + year + ', ' + month + ', ' + day +
 
     // Set new date
     var date = new Date(year, month, day, hour, minute, second, 0);
-    input.dataset['date'] = date.toISOString();
+    input.dataset['date'] = toIsoNoTzConversion(date);
+
+    // Update input value
+    input.value = formatDateString(date, input.dataset['format']);
 
     openDatetimePicker(input_id, false);
 
     return false;
+}
+
+function zeroFill(str, length)
+{
+    while (str.toString().length < length) {
+        str = '0' + str;
+    }
+    return str;
+}
+
+function fromIsoNoTzConversion(date_str)
+{
+    var year = date_str.substr(0, 4);
+    var month = date_str.substr(5, 2) - 1;
+    var day = date_str.substr(8, 2);
+    var hour = date_str.substr(11, 2);
+    var minute = date_str.substr(14, 2);
+    var second = date_str.substr(17, 2);
+    return new Date(year, month, day, hour, minute, second, 0);
+}
+
+function toIsoNoTzConversion(date)
+{
+    return formatDateString(date, '%Y-%m-%dT%H:%M:%S');
+}
+
+function formatDateString(date, format)
+{
+    var result = '';
+
+    for (var i = 0; i < format.length; ++ i) {
+        var c = format.charAt(i);
+        if (c != '%') {
+            result += c;
+        } else {
+            var c2 = format.charAt(++ i);
+// TODO: Support more formats!
+            if (c2 == '%') {
+                result += '%'
+            } else if (c2 == 'd') {
+                result += zeroFill(date.getDate(), 2);
+            } else if (c2 == 'H') {
+                result += zeroFill(date.getHours(), 2);
+            } else if (c2 == 'm') {
+                result += zeroFill(date.getMonth() + 1, 2);
+            } else if (c2 == 'M') {
+                result += zeroFill(date.getMinutes(), 2);
+            } else if (c2 == 'S') {
+                result += zeroFill(date.getSeconds(), 2);
+            } else if (c2 == 'Y') {
+                result += date.getFullYear();
+            }
+        }
+    }
+
+    return result;
 }
 </script>"""
 
@@ -114,7 +172,7 @@ console.log('selectDate(' + input_id + ', ' + year + ', ' + month + ', ' + day +
 class DatetimeWidget(Widget):
 
     def __init__(self, *args, **kwargs):
-        self.datetime_format = kwargs.pop('format', '%c')
+        self.datetime_format = kwargs.pop('format', '%Y.%m.%d %H:%M:%S')
         super(DatetimeWidget, self).__init__(*args, **kwargs)
 
     def render(self, name, value, attrs=None):
@@ -134,7 +192,7 @@ class DatetimeWidget(Widget):
             value=value,
             onclick='openDatetimePicker("' + input_id + '", true);',
         )
-        return mark_safe(JAVASCRIPT_CODE) + format_html('<input{} readonly data-date="' + date_isoformat + '" />', flatatt(final_attrs))
+        return mark_safe(JAVASCRIPT_CODE) + format_html('<input{} readonly data-format="' + self.datetime_format + '" data-date="' + date_isoformat + '" />', flatatt(final_attrs))
 
     def value_from_datadict(self, data, files, name):
         value = data.get(name, None)
