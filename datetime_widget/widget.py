@@ -18,7 +18,7 @@ function openDatetimePicker(input_id)
 
     var picker = document.getElementById(picker_id);
     if (picker) {
-        return true;
+        picker.parentElement.removeChild(picker);
     }
 
     var picker_div = document.createElement('div');
@@ -28,7 +28,7 @@ function openDatetimePicker(input_id)
     // Read date information from the input
     var date_now = new Date(input.dataset['date']);
     var year_now = date_now.getFullYear();
-    var month_now = date_now.getMonth() + 1;
+    var month_now = date_now.getMonth();
     var day_now = date_now.getDate();
 
     var first_day_of_month = new Date(year_now, month_now, 1).getDay();
@@ -42,16 +42,17 @@ function openDatetimePicker(input_id)
 
     // Year input
     picker_html += '<div style="width: 250px; text-align: center;">';
-    picker_html += '<a style="float: left; text-decoration: none;" href="#">&nbsp;&nbsp;&laquo;&nbsp;&nbsp;</a>';
+    picker_html += '<a style="float: left; text-decoration: none;" href="" onclick="return selectDate(\\\'' + input_id + '\\\', ' + (year_now - 1) + ', ' + month_now + ', ' + day_now + ');">&nbsp;&nbsp;&laquo;&nbsp;&nbsp;</a>';
     picker_html += '<span id="' + picker_id + '_year">' + year_now + '</span>';
-    picker_html += '<a style="float: right; text-decoration: none;" href="#">&nbsp;&nbsp;&raquo;&nbsp;&nbsp;</a>';
+    picker_html += '<a style="float: right; text-decoration: none;" href="" onclick="return selectDate(\\\'' + input_id + '\\\', ' + (year_now + 1) + ', ' + month_now + ', ' + day_now + ');">&nbsp;&nbsp;&raquo;&nbsp;&nbsp;</a>';
     picker_html += '</div>';
+// onclick="return selectDate(\\\'' + input_id + '\\\', ' + year_now + ', ' + month_now + ', ' + day_now + ');"
 
     // Month input
     picker_html += '<div style="width: 250px; text-align: center;">';
-    picker_html += '<a style="float: left; text-decoration: none;" href="#">&nbsp;&nbsp;&laquo;&nbsp;&nbsp;</a>';
+    picker_html += '<a style="float: left; text-decoration: none;" href="" onclick="return selectDate(\\\'' + input_id + '\\\', ' + year_now + ', ' + (month_now - 1) + ', ' + day_now + ');">&nbsp;&nbsp;&laquo;&nbsp;&nbsp;</a>';
     picker_html += '<span id="' + picker_id + '_month">' + MONTH_NAMES[month_now] + '</span>';
-    picker_html += '<a style="float: right; text-decoration: none;" href="#">&nbsp;&nbsp;&raquo;&nbsp;&nbsp;</a>';
+    picker_html += '<a style="float: right; text-decoration: none;" href="" onclick="return selectDate(\\\'' + input_id + '\\\', ' + year_now + ', ' + (month_now + 1) + ', ' + day_now + ');">&nbsp;&nbsp;&raquo;&nbsp;&nbsp;</a>';
     picker_html += '</div>';
 
     // Grid of days
@@ -63,13 +64,13 @@ function openDatetimePicker(input_id)
             var day_of_month = row * 7 + col - first_day_of_month + 1;
 
             if (day_of_month < 1) {
-                picker_html += '<td style="text-align: center; color: #888;">' + (day_of_month + days_in_last_month) + '</td>';
+                picker_html += '<td style="text-align: center;"><a style="color: #999; text-decoration: none;" href="" onclick="return selectDate(\\\'' + input_id + '\\\', ' + year_now + ', ' + (month_now - 1) + ', ' + (day_of_month + days_in_last_month) + ');">' + (day_of_month + days_in_last_month) + '</a></td>';
             } else if (day_of_month > days_in_month) {
-                picker_html += '<td style="text-align: center; color: #888;">' + (day_of_month - days_in_month) + '</td>';
+                picker_html += '<td style="text-align: center;"><a style="color: #999; text-decoration: none;" href="" onclick="return selectDate(\\\'' + input_id + '\\\', ' + year_now + ', ' + (month_now + 1) + ', ' + (day_of_month - days_in_month) + ');">' + (day_of_month - days_in_month) + '</td>';
             } else if (day_of_month == day_now) {
                 picker_html += '<td style="text-align: center;"><strong>' + day_of_month + '</strong></td>';
             } else {
-                picker_html += '<td style="text-align: center;">' + day_of_month + '</td>';
+                picker_html += '<td style="text-align: center;"><a style="color: #333; text-decoration: none;" href="" onclick="return selectDate(\\\'' + input_id + '\\\', ' + year_now + ', ' + month_now + ', ' + day_of_month + ');">' + day_of_month + '</a></td>';
             }
 
         }
@@ -80,6 +81,30 @@ function openDatetimePicker(input_id)
     picker_div.innerHTML = picker_html;
 
     input.parentElement.appendChild(picker_div);
+}
+
+function selectDate(input_id, year, month, day)
+{
+console.log('selectDate(' + input_id + ', ' + year + ', ' + month + ', ' + day + ')');
+    var input = document.getElementById(input_id);
+
+    // Get time
+    var date_now = new Date(input.dataset['date']);
+    var hour = date_now.getHours();
+    var minute = date_now.getMinutes();
+    var second = date_now.getSeconds();
+
+    // Prevent day overflow
+    var days_in_month = new Date(year, month + 1, 0).getDate();
+    day = Math.min(day, days_in_month);
+
+    // Set new date
+    var date = new Date(year, month, day, hour, minute, second, 0);
+    input.dataset['date'] = date.toISOString();
+
+    openDatetimePicker(input_id);
+
+    return false;
 }
 </script>"""
 
