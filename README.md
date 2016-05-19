@@ -8,8 +8,6 @@ to install as possible.
 On a down side, it is bloat, because it embeds all
 required Javascript everytime the Widget is needed.
 
-Time selection is still missing.
-
 
 Screenshot
 ==========

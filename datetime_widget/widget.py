@@ -80,6 +80,25 @@ function openDatetimePicker(input_id, close_if_open)
     }
     picker_html += '</table>';
 
+    // Time inputs
+    picker_html += '<div style="width: 250px; text-align: center;">';
+    picker_html += '<select onchange="return selectHour(\\\'' + input_id + '\\\', this.selectedIndex);">';
+    for (var hour = 0; hour < 24; ++ hour) {
+        picker_html += '<option'
+        if (hour == date_now.getHours()) picker_html += ' selected';
+        picker_html += '>' + zeroFill(hour, 2) + '</option>';
+    }
+    picker_html += '</select>';
+    picker_html += '<select onchange="return selectMinute(\\\'' + input_id + '\\\', this.selectedIndex);">';
+    for (var minute = 0; minute < 60; ++ minute) {
+        picker_html += '<option'
+        if (minute == date_now.getMinutes()) picker_html += ' selected';
+        picker_html += '>' + zeroFill(minute, 2) + '</option>';
+    }
+    picker_html += '</select>';
+    picker_html += '</div>';
+
+
     picker_div.innerHTML = picker_html;
 
     input.parentElement.appendChild(picker_div);
@@ -107,6 +126,49 @@ function selectDate(input_id, year, month, day)
     input.value = formatDateString(date, input.dataset['format']);
 
     openDatetimePicker(input_id, false);
+
+    return false;
+}
+
+function selectHour(input_id, hour)
+{
+    var input = document.getElementById(input_id);
+
+    // Get date and minutes
+    var date_now = fromIsoNoTzConversion(input.dataset['date']);
+    var year = date_now.getFullYear();
+    var month = date_now.getMonth();
+    var day = date_now.getDate();
+    var minute = date_now.getMinutes();
+    var second = date_now.getSeconds();
+
+    // Set new date
+    var date = new Date(year, month, day, hour, minute, second, 0);
+    input.dataset['date'] = toIsoNoTzConversion(date);
+
+    // Update input value
+    input.value = formatDateString(date, input.dataset['format']);
+
+    return false;
+}
+
+function selectMinute(input_id, minute)
+{
+    var input = document.getElementById(input_id);
+
+    // Get date and minutes
+    var date_now = fromIsoNoTzConversion(input.dataset['date']);
+    var year = date_now.getFullYear();
+    var month = date_now.getMonth();
+    var day = date_now.getDate();
+    var hour = date_now.getHours();
+
+    // Set new date
+    var date = new Date(year, month, day, hour, minute, 0, 0);
+    input.dataset['date'] = toIsoNoTzConversion(date);
+
+    // Update input value
+    input.value = formatDateString(date, input.dataset['format']);
 
     return false;
 }
