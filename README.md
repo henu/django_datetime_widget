@@ -11,6 +11,12 @@ required Javascript everytime the Widget is needed.
 Time selection is still missing.
 
 
+Screenshot
+==========
+
+![](http://i.imgur.com/mm8gfwx.png)
+
+
 How to use
 ==========
 
@@ -21,9 +27,3 @@ class SampleForm(forms.Form):
 
     some_date = forms.DateTimeField(widget=DatetimeWidget())
 ```
-
-
-Screenshot
-==========
-
-![](http://i.imgur.com/mm8gfwx.png)
